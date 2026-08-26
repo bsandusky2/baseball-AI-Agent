@@ -1,8 +1,0 @@
-smolagents[toolkit]
-gradio<6
-pandas
-pytz
-pyyaml
-requests
-pybaseball
-python-dotenv
