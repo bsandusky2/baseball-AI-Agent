@@ -2,3 +2,6 @@
 .venv/
 __pycache__/
 *.pyc
+
+# large local data files — too big for GitHub (100MB hard limit)
+data/
