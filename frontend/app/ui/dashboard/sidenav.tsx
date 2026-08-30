@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import clsx from 'clsx';
 import {
@@ -10,7 +12,8 @@ import {
   Cog6ToothIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
-import { chatHistory, players } from '@/app/ui/dashboard/sidebar-mock-data';
+import { players } from '@/app/ui/dashboard/sidebar-mock-data';
+import { useChatMenu } from '@/app/ui/dashboard/chat-menu-context';
 
 const bottomLinks = [
   { name: 'Dashboard', href: '/dashboard', icon: BuildingLibraryIcon },
@@ -22,6 +25,8 @@ const bottomLinks = [
 ];
 
 export default function SideNav() {
+  const { openChatMenu, chats } = useChatMenu();
+
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-gray-950 text-gray-100">
       <div className="flex items-center gap-3 border-b border-gray-800 p-4">
@@ -40,7 +45,10 @@ export default function SideNav() {
       </div>
 
       <div className="p-4">
-        <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500">
+        <button
+          onClick={openChatMenu}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+        >
           <PlusIcon className="h-4 w-4" />
           New Chat
         </button>
@@ -51,7 +59,7 @@ export default function SideNav() {
           Chat History
         </p>
         <div className="space-y-1">
-          {chatHistory.map((chat) => (
+          {chats.map((chat) => (
             <button
               key={chat.id}
               className={clsx(
