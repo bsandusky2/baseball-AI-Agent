@@ -8,6 +8,13 @@ export type Chat = {
   title: string;
   time: string;
   active: boolean;
+  playerId?: number;
+  playerName?: string;
+};
+
+export type SelectedPlayer = {
+  id: number;
+  name: string;
 };
 
 type ChatMenuContextType = {
@@ -16,6 +23,8 @@ type ChatMenuContextType = {
   closeChatMenu: () => void;
   chats: Chat[];
   addChat: (title: string) => void;
+  selectedPlayer: SelectedPlayer | null;
+  startPlayerChat: (player: SelectedPlayer) => void;
 };
 
 const ChatMenuContext = createContext<ChatMenuContextType | undefined>(undefined);
@@ -23,10 +32,25 @@ const ChatMenuContext = createContext<ChatMenuContextType | undefined>(undefined
 export function ChatMenuProvider({ children }: { children: ReactNode }) {
   const [isChatMenuOpen, setIsChatMenuOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>(initialChatHistory);
+  const [selectedPlayer, setSelectedPlayer] = useState<SelectedPlayer | null>(null);
 
   const addChat = (title: string) => {
     const newChat: Chat = { id: Date.now().toString(), title, time: 'Just now', active: true };
     setChats((prev) => [newChat, ...prev.map((chat) => ({ ...chat, active: false }))]);
+  };
+
+  const startPlayerChat = (player: SelectedPlayer) => {
+    const newChat: Chat = {
+      id: Date.now().toString(),
+      title: `Chat with ${player.name}`,
+      time: 'Just now',
+      active: true,
+      playerId: player.id,
+      playerName: player.name,
+    };
+    setChats((prev) => [newChat, ...prev.map((chat) => ({ ...chat, active: false }))]);
+    setSelectedPlayer(player);
+    setIsChatMenuOpen(true);
   };
 
   return (
@@ -37,6 +61,8 @@ export function ChatMenuProvider({ children }: { children: ReactNode }) {
         closeChatMenu: () => setIsChatMenuOpen(false),
         chats,
         addChat,
+        selectedPlayer,
+        startPlayerChat,
       }}
     >
       {children}

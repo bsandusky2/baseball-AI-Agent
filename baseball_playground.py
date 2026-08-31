@@ -1,13 +1,24 @@
 import duckdb
+import pandas as pd
 
+# Remove the display limits for columns and width
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+
+#get the tables
 con = duckdb.connect("data/baseball.duckdb")
+tables = con.execute("SHOW TABLES").fetchall()
+print(tables)
 
+#print all the columns in the dataframe
+columns = con.sql("""
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_name = 'statcast'
+    ORDER BY ordinal_position
+""").fetchall()
 
-print(con.sql("""
-        SELECT AVG(release_speed), pitcher, player_name AS pitcher_name, pitch_name, pitch_type
-        FROM statcast
-        GROUP BY pitcher, player_name, pitch_name, pitch_type
-        ORDER BY pitcher_name
-    """))
+for column in columns:
+    print(column[0])
 
 con.close()
