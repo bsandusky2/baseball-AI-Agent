@@ -12,20 +12,23 @@ import {
   Cog6ToothIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
-import { useChatMenu } from '@/app/ui/dashboard/chat-menu-context';
+import { useChatMenu, PlayerRole } from '@/app/ui/dashboard/chat-menu-context';
+import PlayerAvatar from '@/app/ui/dashboard/player-avatar';
 import { useEffect, useState } from 'react';
 
 type Player = {
   id: number;
   name: string;
+  role?: PlayerRole;
+  team?: string;
 };
 
 const DEFAULT_PLAYERS: Player[] = [
-  { id: 660271, name: 'Shohei Ohtani' },
-  { id: 670541, name: 'Yordan Álvarez' },
-  { id: 694973, name: 'Paul Skenes' },
-  { id: 547180, name: 'Bryce Harper' },
-  { id: 608070, name: 'José Ramírez' },
+  { id: 660271, name: 'Shohei Ohtani', role: 'batter', team: 'LAD' },
+  { id: 670541, name: 'Yordan Álvarez', role: 'batter', team: 'HOU' },
+  { id: 694973, name: 'Paul Skenes', role: 'pitcher', team: 'PIT' },
+  { id: 547180, name: 'Bryce Harper', role: 'batter', team: 'PHI' },
+  { id: 608070, name: 'José Ramírez', role: 'batter', team: 'CLE' },
 ];
 
 const bottomLinks = [
@@ -38,7 +41,7 @@ const bottomLinks = [
 ];
 
 export default function SideNav() {
-  const { openChatMenu, chats, startPlayerChat } = useChatMenu();
+  const { openChatMenu, chats, startPlayerChat, setActiveChat } = useChatMenu();
   const [playerSearch, setPlayerSearch] = useState('');
   const [searchResults, setSearchResults] = useState<Player[]>([]);
   const players = playerSearch.trim() ? searchResults : DEFAULT_PLAYERS;
@@ -95,6 +98,7 @@ export default function SideNav() {
           {chats.slice(0, 5).map((chat) => (
             <button
               key={chat.id}
+              onClick={() => setActiveChat(chat.id)}
               className={clsx(
                 'w-full rounded-lg px-3 py-2 text-left transition-colors',
                 chat.active ? 'bg-blue-600' : 'hover:bg-gray-800',
@@ -137,18 +141,14 @@ export default function SideNav() {
           {players.map((player) => (
             <button
               key={player.id}
-              onClick={() => startPlayerChat(player)}
+              onClick={() => startPlayerChat({ ...player, role: player.role ?? 'batter' })}
               className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-gray-800"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-700 text-xs font-semibold text-gray-200">
-                {player.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()}
+              <PlayerAvatar id={player.id} name={player.name} />
+              <div>
+                <p className="text-sm text-gray-100">{player.name}</p>
+                {player.team && <p className="text-xs text-gray-500">{player.team}</p>}
               </div>
-              <p className="text-sm text-gray-100">{player.name}</p>
             </button>
           ))}
         </div>

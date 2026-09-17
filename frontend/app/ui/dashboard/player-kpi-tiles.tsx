@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PlayerRole } from '@/app/ui/dashboard/chat-menu-context';
 
 type Tone = 'poor' | 'below_avg' | 'above_avg' | 'good' | 'neutral';
 
@@ -53,30 +54,43 @@ function formatSigned(value: number | null | undefined, digits = 2) {
 type TileConfig = {
   key: keyof Omit<PlayerKPIResponse, 'player_id'>;
   label: string;
+  pitcherLabel?: string;
   format: (value: number | null | undefined) => string;
   unit?: string;
 };
 
 const TILES: TileConfig[] = [
-  { key: 'pitches_analyzed', label: 'Pitches Analyzed', format: formatCount },
-  { key: 'xwoba', label: 'xwOBA', format: (v) => formatDecimal(v, 3) },
-  { key: 'whiff_rate', label: 'Whiff Rate', format: formatPercent },
-  { key: 'chase_rate', label: 'Chase Rate', format: formatPercent },
-  { key: 'avg_exit_velocity', label: 'Avg Exit Velo', format: formatMph, unit: 'mph' },
-  { key: 'barrel_rate', label: 'Barrel Rate', format: formatPercent },
+  { key: 'pitches_analyzed', label: 'Pitches Analyzed', pitcherLabel: 'Pitches Thrown', format: formatCount },
+  { key: 'xwoba', label: 'xwOBA', pitcherLabel: 'xwOBA Allowed', format: (v) => formatDecimal(v, 3) },
+  { key: 'whiff_rate', label: 'Whiff Rate', pitcherLabel: 'Whiff Rate Induced', format: formatPercent },
+  { key: 'chase_rate', label: 'Chase Rate', pitcherLabel: 'Chase Rate Induced', format: formatPercent },
+  {
+    key: 'avg_exit_velocity',
+    label: 'Avg Exit Velo',
+    pitcherLabel: 'Avg Exit Velo Allowed',
+    format: formatMph,
+    unit: 'mph',
+  },
+  { key: 'barrel_rate', label: 'Barrel Rate', pitcherLabel: 'Barrel Rate Allowed', format: formatPercent },
   { key: 'run_value', label: 'Run Value', format: (v) => formatSigned(v, 2) },
 ];
 
-export default function PlayerKpiTiles({ playerId }: { playerId: number }) {
+export default function PlayerKpiTiles({
+  playerId,
+  role = 'batter',
+}: {
+  playerId: number;
+  role?: PlayerRole;
+}) {
   const [data, setData] = useState<PlayerKPIResponse | null>(null);
 
   useEffect(() => {
     setData(null);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/kpi/${playerId}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/kpi/${playerId}?role=${role}`)
       .then((res) => res.json())
       .then(setData)
       .catch((err) => console.error('Failed to load player KPIs', err));
-  }, [playerId]);
+  }, [playerId, role]);
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
@@ -85,7 +99,7 @@ export default function PlayerKpiTiles({ playerId }: { playerId: number }) {
         return (
           <div key={tile.key} className="rounded-lg border border-gray-800 bg-gray-900 p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              {tile.label}
+              {role === 'pitcher' && tile.pitcherLabel ? tile.pitcherLabel : tile.label}
             </p>
             <p className="mt-1 text-2xl font-semibold text-white">
               {tile.format(stat?.value)}

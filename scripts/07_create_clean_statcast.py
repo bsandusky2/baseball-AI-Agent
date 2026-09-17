@@ -51,6 +51,17 @@ SELECT
     api_break_x_arm,
     api_break_x_batter_in,
 
+    -- Trajectory physics: initial velocity + constant acceleration vectors
+    -- at release. Needed to reconstruct the actual parabolic flight path
+    -- (release point -> plate is a curve, not a line) for 3D/2D pitch
+    -- trajectory visualizations.
+    vx0,
+    vy0,
+    vz0,
+    ax,
+    ay,
+    az,
+
     -- ============================================================
     -- Batter / pitcher context
     -- ============================================================
@@ -88,6 +99,10 @@ SELECT
     launch_angle,
     hit_distance_sc,
     launch_speed_angle,
+
+    -- Batted-ball landing coordinates on the field, for spray charts.
+    hc_x,
+    hc_y,
 
     -- ============================================================
     -- Expected results

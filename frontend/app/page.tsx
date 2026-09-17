@@ -10,10 +10,10 @@ export default function Page() {
 
   return (
     <div className="flex flex-col gap-6">
-      {selectedPlayer && <PlayerKpiTiles playerId={selectedPlayer.id} />}
-      {selectedPlayer && <PlayerChartGrid playerId={selectedPlayer.id} />}
+      {selectedPlayer && <PlayerKpiTiles playerId={selectedPlayer.id} role={selectedPlayer.role} />}
+      {selectedPlayer && <PlayerChartGrid playerId={selectedPlayer.id} role={selectedPlayer.role} />}
       <ChatMenuBanner />
-      {!selectedPlayer && <p>Dashboard Page</p>}
+      {!selectedPlayer && <p className="text-gray-400">Dashboard Page</p>}
     </div>
   );
 }
