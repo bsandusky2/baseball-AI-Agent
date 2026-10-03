@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+
+# large local data files — mount these as a volume instead of baking into the image
+data/
+
+frontend/node_modules
+frontend/.next
+
+.gradio

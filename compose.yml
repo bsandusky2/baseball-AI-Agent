@@ -1,0 +1,36 @@
+# compose.yaml
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: python-backend
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./data:/usr/src/app/data:ro
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Browser-side fetches hit this directly, so it must be a host-reachable
+        # URL, not the internal service name — and it has to be a build arg since
+        # NEXT_PUBLIC_* vars are inlined into the JS bundle at `next build` time,
+        # not read at container start.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: node-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+networks:
+  app-network:
+    driver: bridge

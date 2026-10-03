@@ -1,5 +1,9 @@
 smolagents[toolkit]
 pandas
+numpy
+scipy
+matplotlib
+pillow
 pytz
 pyyaml
 requests
