@@ -1,5 +1,5 @@
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 import duckdb
 from app import model, tools_list, prompt_templates
@@ -36,6 +36,8 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+router = APIRouter(prefix="/api")
 
 # Single shared read-only connection, opened once — same pattern as app.py.
 con = duckdb.connect(str(DB_PATH), read_only=True)
@@ -109,7 +111,7 @@ PLAYERS_BASE_QUERY = """
 """
 
 
-@app.get("/players")
+@router.get("/players")
 def get_players(search: str | None = Query(default=None)):
     # A separate cursor per request keeps concurrent requests from
     # stepping on each other's query state on the shared connection.
@@ -136,7 +138,7 @@ def get_players(search: str | None = Query(default=None)):
     ]
 
 #Get BA, SLUG %, OBP%, Whiff Rate, Chase Rate, Barrel rate, Average Exit Velo Rate
-@app.get("/kpi/{player_id}")
+@router.get("/kpi/{player_id}")
 def get_static_kpi(player_id: int, role: str = Query(default="batter")):
     column = role_column(role)
     cursor = con.cursor()
@@ -194,7 +196,7 @@ HEATMAP_METRICS = {
 # col 2 = in, using plate_x flipped by batter handedness (stand) — plate_x's
 # sign means opposite things for a lefty vs a righty, so raw plate_x alone
 # can't tell you away/in without knowing which side the batter stands on.
-@app.get("/kpi/{player_id}/heatmap")
+@router.get("/kpi/{player_id}/heatmap")
 def get_heatmap(
     player_id: int,
     metric: str = Query(default="whiff_rate"),
@@ -258,7 +260,7 @@ def get_heatmap(
 # estimated_woba_using_speedangle only applies to batted balls, so this
 # blends in actual woba_value for the outcomes that can't be "estimated"
 # (walks, strikeouts), same as the xwOBA calc in get_static_kpi.
-@app.get("/kpi/{player_id}/velocity")
+@router.get("/kpi/{player_id}/velocity")
 def get_velocity_chart(player_id: int, role: str = Query(default="batter")):
     column = role_column(role)
     cursor = con.cursor()
@@ -301,7 +303,7 @@ def get_velocity_chart(player_id: int, role: str = Query(default="batter")):
 
 # Whiff rate bucketed by spin rate (100 rpm buckets) on swings only, plus a
 # linear trend line via DuckDB's built-in regression aggregates.
-@app.get("/kpi/{player_id}/spin-rate")
+@router.get("/kpi/{player_id}/spin-rate")
 def get_spin_rate_chart(player_id: int, role: str = Query(default="batter")):
     column = role_column(role)
     cursor = con.cursor()
@@ -372,7 +374,7 @@ def get_spin_rate_chart(player_id: int, role: str = Query(default="batter")):
 PITCH_ARSENAL_MIN_COUNT = 5
 
 
-@app.get("/kpi/{player_id}/pitch-arsenal")
+@router.get("/kpi/{player_id}/pitch-arsenal")
 def get_pitch_arsenal(player_id: int, role: str = Query(default="pitcher")):
     column = role_column(role)
     cursor = con.cursor()
@@ -456,7 +458,7 @@ def get_pitch_arsenal(player_id: int, role: str = Query(default="pitcher")):
 BAT_SPEED_PERCENTILES = list(range(0, 101, 5))
 
 
-@app.get("/kpi/{player_id}/bat-tracking")
+@router.get("/kpi/{player_id}/bat-tracking")
 def get_bat_tracking(player_id: int, role: str = Query(default="batter")):
     column = role_column(role)
     cursor = con.cursor()
@@ -533,7 +535,7 @@ def get_bat_tracking(player_id: int, role: str = Query(default="batter")):
 # geometric angle, not stand-normalized by Statcast) — that's fine for a
 # fan-shaped visualization, which just needs a real, consistent left/right
 # spread, not a pull/oppo label.
-@app.get("/kpi/{player_id}/home-runs")
+@router.get("/kpi/{player_id}/home-runs")
 def get_home_runs(player_id: int, role: str = Query(default="batter")):
     column = role_column(role)
     cursor = con.cursor()
@@ -571,9 +573,8 @@ def get_home_runs(player_id: int, role: str = Query(default="batter")):
         ],
     }
 
-
 # Chat Endpoints
-@app.post("/chat")
+@router.post("/chat")
 def post_chat(request: ChatRequest):
     agent = get_agent_for_chat(request.chat_id)
     result = agent.run(request.message, reset=False)
@@ -594,3 +595,9 @@ def post_chat(request: ChatRequest):
         return {"answer": result.get("title") or "Here's what I found.", "chart": result}
 
     return {"answer": str(result)}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+app.include_router(router)
