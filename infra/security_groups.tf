@@ -1,10 +1,5 @@
 # security_groups.tf
 
-variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
-}
-
 # ALB Security Group
 # HTTP 80 from anywhere
 

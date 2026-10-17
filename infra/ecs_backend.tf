@@ -107,7 +107,11 @@ resource "aws_ecs_service" "backend" {
       aws_security_group.backend_sg.id
     ]
 
-    assign_public_ip = false
+    # No NAT Gateway in this VPC — tasks run in the "private"
+    # subnets (which are actually public here) and need a public
+    # IP to reach ECR / the OpenAI API. Inbound access is still
+    # restricted to the ALB via backend_sg.
+    assign_public_ip = true
   }
 
   load_balancer {

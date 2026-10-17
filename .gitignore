@@ -5,3 +5,11 @@ __pycache__/
 
 # large local data files — too big for GitHub (100MB hard limit)
 data/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfvars
+*.auto.tfvars

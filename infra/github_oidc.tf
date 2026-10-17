@@ -44,7 +44,7 @@ resource "aws_iam_role" "github_actions_infra" {
           }
 
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:YOUR_GITHUB_USERNAME/YOUR_REPOSITORY:*"
+            "token.actions.githubusercontent.com:sub" = "repo:bsandusky2/baseball-AI-Agent:*"
           }
         }
       }
@@ -232,7 +232,7 @@ resource "aws_iam_role" "github_actions_app" {
           }
 
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:YOUR_GITHUB_USERNAME/YOUR_REPOSITORY:*"
+            "token.actions.githubusercontent.com:sub" = "repo:bsandusky2/baseball-AI-Agent:*"
           }
         }
       }
