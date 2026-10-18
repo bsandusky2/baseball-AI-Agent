@@ -44,7 +44,11 @@ resource "aws_iam_role" "github_actions_infra" {
           }
 
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:bsandusky2/baseball-AI-Agent:*"
+            # GitHub issues OIDC tokens with the immutable-ID subject
+            # format (repo:<user>@<user-id>/<repo>@<repo-id>:...), which
+            # survives renames/transfers — this must match that exact
+            # literal, not the old plain-name format.
+            "token.actions.githubusercontent.com:sub" = "repo:bsandusky2@47825016/baseball-AI-Agent@1287749087:*"
           }
         }
       }
@@ -232,7 +236,11 @@ resource "aws_iam_role" "github_actions_app" {
           }
 
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:bsandusky2/baseball-AI-Agent:*"
+            # GitHub issues OIDC tokens with the immutable-ID subject
+            # format (repo:<user>@<user-id>/<repo>@<repo-id>:...), which
+            # survives renames/transfers — this must match that exact
+            # literal, not the old plain-name format.
+            "token.actions.githubusercontent.com:sub" = "repo:bsandusky2@47825016/baseball-AI-Agent@1287749087:*"
           }
         }
       }
