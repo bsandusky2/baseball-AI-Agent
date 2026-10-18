@@ -1,0 +1,51 @@
+name: Production CI/CD Pipeline
+
+defaults:
+  run:
+    working-directory: infra
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write   # Required for requesting the AWS JWT (OIDC)
+  contents: read    # Required to check out the repository
+
+jobs:
+  # ==========================================
+  # JOB 1: Provision Infrastructure via Terraform
+  # ==========================================
+  terraform:
+    name: 'Terraform IaC'
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_vpc_id: ${{ vars.VPC_ID }}
+      TF_VAR_public_subnet_ids: ${{ vars.PUBLIC_SUBNET_IDS }}
+      TF_VAR_private_subnet_ids: ${{ vars.PRIVATE_SUBNET_IDS }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_INFRA }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.0
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate & Plan
+        run: |
+          terraform validate
+          terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve tfplan
