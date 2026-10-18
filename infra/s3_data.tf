@@ -57,19 +57,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "baseball_data" {
 
 
 # ---------------------------------------------------------
-# Baseball DuckDB Database
-# ---------------------------------------------------------
-
-resource "aws_s3_object" "baseball_duckdb" {
-  bucket = aws_s3_bucket.baseball_data.id
-  key    = "data/baseball.duckdb"
-  source = "${path.module}/../data/baseball.duckdb"
-
-  etag = filemd5("${path.module}/../data/baseball.duckdb")
-}
-
-
-# ---------------------------------------------------------
 # AWS Account ID
 # Used to make the bucket name globally unique
 # ---------------------------------------------------------
