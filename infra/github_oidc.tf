@@ -131,6 +131,16 @@ resource "aws_iam_role_policy" "github_actions_infra" {
         Resource = "arn:aws:ssm:*:*:parameter/baseball-agent/*"
       },
       {
+        # DescribeParameters is a list-type SSM API with no resource-level
+        # scoping support — it always requires Resource "*", even though
+        # the parameters it describes are scoped above. Terraform calls
+        # this during refresh/plan for aws_ssm_parameter resources.
+        Sid      = "ParameterStoreDescribe"
+        Effect   = "Allow"
+        Action   = "ssm:DescribeParameters"
+        Resource = "*"
+      },
+      {
         Sid      = "CloudWatchLogs"
         Effect   = "Allow"
         Action   = "logs:*"
