@@ -65,8 +65,8 @@ resource "aws_iam_role_policy" "ecs_task_execution_policy" {
         ]
 
         Resource = [
-          aws_cloudwatch_log_group.frontend.arn,
-          aws_cloudwatch_log_group.backend.arn
+          "${aws_cloudwatch_log_group.frontend.arn}:*",
+          "${aws_cloudwatch_log_group.backend.arn}:*"
         ]
       },
 
@@ -136,6 +136,22 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         ]
 
         Resource = aws_efs_file_system.main.arn
+      },
+
+      # Lets the backend (re)load baseball.duckdb from S3 onto the
+      # EFS volume it mounts at /usr/src/app/data.
+      {
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+
+        Resource = [
+          aws_s3_bucket.baseball_data.arn,
+          "${aws_s3_bucket.baseball_data.arn}/*"
+        ]
       }
     ]
   })
